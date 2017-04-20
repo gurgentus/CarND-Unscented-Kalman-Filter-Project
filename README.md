@@ -1,7 +1,7 @@
 # Unscented Kalman Filter (based on SDC Nanodegree UKF project)
 
-This project combines the Kalman and Extended Kalman Filters with an unscented
-Kalman filters for pedestrian/bicycle tracking.
+This project combines the Kalman and Extended Kalman filters with an unscented
+Kalman filter for pedestrian/bicycle tracking.
 
 The `FusionEKF` class is used to select which filter to use for each type of measurement.
 Currently both RADAR and LIDAR use the Unscented Kalman Filter.  To switch back to
