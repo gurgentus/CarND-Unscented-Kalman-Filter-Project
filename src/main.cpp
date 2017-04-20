@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -6,6 +5,7 @@
 #include <stdlib.h>
 #include "Eigen/Dense"
 #include "ukf.h"
+#include "FusionEKF.h"
 #include "ground_truth_package.h"
 #include "measurement_package.h"
 
@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
   // prep the measurement packages (each line represents a measurement at a
   // timestamp)
   while (getline(in_file_, line)) {
+
     string sensor_type;
     MeasurementPackage meas_package;
     GroundTruthPackage gt_package;
@@ -82,7 +83,6 @@ int main(int argc, char* argv[]) {
 
     // reads first element from the current line
     iss >> sensor_type;
-
     if (sensor_type.compare("L") == 0) {
       // laser measurement
 
@@ -129,8 +129,11 @@ int main(int argc, char* argv[]) {
       gt_pack_list.push_back(gt_package);
   }
 
+  // Create a Fusion EKF instance
+  FusionEKF fusionEKF;
+
   // Create a UKF instance
-  UKF ukf;
+  // UKF ukf;
 
   // used to compute the RMSE later
   vector<VectorXd> estimations;
@@ -155,29 +158,27 @@ int main(int argc, char* argv[]) {
   out_file_ << "vy_true" << "\t";
   out_file_ << "NIS" << "\n";
 
-
   for (size_t k = 0; k < number_of_measurements; ++k) {
-    // Call the UKF-based fusion
-    ukf.ProcessMeasurement(measurement_pack_list[k]);
+    // Call the fusion, which contains the decision logic for using
+    // KF, EKF, UKF, dependent on the measurement type
+    fusionEKF.ProcessMeasurement(measurement_pack_list[k]);
 
     // output the estimation
-    out_file_ << ukf.x_(0) << "\t"; // pos1 - est
-    out_file_ << ukf.x_(1) << "\t"; // pos2 - est
-    out_file_ << ukf.x_(2) << "\t"; // vel_abs -est
-    out_file_ << ukf.x_(3) << "\t"; // yaw_angle -est
-    out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
+    out_file_ << fusionEKF.ukf_.x_(0) << "\t"; // pos1 - est
+    out_file_ << fusionEKF.ukf_.x_(1) << "\t"; // pos2 - est
+    out_file_ << fusionEKF.ukf_.x_(2) << "\t"; // vel_abs -est
+    out_file_ << fusionEKF.ukf_.x_(3) << "\t"; // yaw_angle -est
+    out_file_ << fusionEKF.ukf_.x_(4) << "\t"; // yaw_rate -est
 
     // output the measurements
     if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
-      // output the estimation
-
       // p1 - meas
       out_file_ << measurement_pack_list[k].raw_measurements_(0) << "\t";
 
       // p2 - meas
       out_file_ << measurement_pack_list[k].raw_measurements_(1) << "\t";
     } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-      // output the estimation in the cartesian coordinates
+      // output the measurements in the cartesian coordinates
       float ro = measurement_pack_list[k].raw_measurements_(0);
       float phi = measurement_pack_list[k].raw_measurements_(1);
       out_file_ << ro * cos(phi) << "\t"; // p1_meas
@@ -191,24 +192,24 @@ int main(int argc, char* argv[]) {
     out_file_ << gt_pack_list[k].gt_values_(3) << "\t";
 
     // output the NIS values
-    
+
     if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
-      out_file_ << ukf.NIS_laser_ << "\n";
+      out_file_ << fusionEKF.ukf_.NIS_laser_ << "\n";
     } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-      out_file_ << ukf.NIS_radar_ << "\n";
+      out_file_ << fusionEKF.ukf_.NIS_radar_ << "\n";
     }
 
 
     // convert ukf x vector to cartesian to compare to ground truth
     VectorXd ukf_x_cartesian_ = VectorXd(4);
 
-    float x_estimate_ = ukf.x_(0);
-    float y_estimate_ = ukf.x_(1);
-    float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
-    float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
-    
+    float x_estimate_ = fusionEKF.ukf_.x_(0);
+    float y_estimate_ = fusionEKF.ukf_.x_(1);
+    float vx_estimate_ = fusionEKF.ukf_.x_(2) * cos(fusionEKF.ukf_.x_(3));
+    float vy_estimate_ = fusionEKF.ukf_.x_(2) * sin(fusionEKF.ukf_.x_(3));
+
     ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
-    
+
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
 

@@ -1,46 +1,37 @@
-# Unscented Kalman Filter Project Starter Code
-Self-Driving Car Engineer Nanodegree Program
+# Unscented Kalman Filter (based on SDC Nanodegree UKF project)
 
----
+This project combines the Kalman and Extended Kalman Filters with an unscented
+Kalman filters for pedestrian/bicycle tracking.
 
-## Dependencies
+The `FusionEKF` class is used to select which filter to use for each type of measurement.
+Currently both RADAR and LIDAR use the Unscented Kalman Filter.  To switch back to
+Kalman or Extended Kalman filters uncomment the appropriate calls.
 
-* cmake >= v3.5
-* make >= v4.1
-* gcc/g++ >= v5.4
 
 ## Basic Build Instructions
 
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./UnscentedKF path/to/input.txt path/to/output.txt`. You can find
-   some sample inputs in 'data/'.
-    - eg. `./UnscentedKF ../data/sample-laser-radar-measurement-data-1.txt output.txt`
+1. Make a build directory: `mkdir build && cd build`
+2. Compile: `cmake .. && make`
+   * On windows, you may need to run: `cmake .. -G "Unix Makefiles" && make`
+3. Run it: `./UnscentedKF path/to/input.txt path/to/output.txt` or with another input
 
-## Editor Settings
+# Dependencies:
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+* cmake >= 3.5
+ * All OSes: [click here for installation instructions](https://cmake.org/install/)
+* make >= 4.1
+  * Linux: make is installed by default on most Linux distros
+  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
+  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
+* gcc/g++ >= 5.4
+  * Linux: gcc / g++ is installed by default on most Linux distros
+  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
+  * Windows: recommend using [MinGW](http://www.mingw.org/)
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+  # To run:
 
-## Code Style
+  `./build/UnscentedKF path/to/input.txt path/to/output.txt`
 
-Please stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html) as much as possible.
+  e.g.
 
-## Generating Additional Data
-
-This is optional!
-
-If you'd like to generate your own radar and lidar data, see the
-[utilities repo](https://github.com/udacity/CarND-Mercedes-SF-Utilities) for
-Matlab scripts that can generate additional data.
-
-## Project Instructions and Rubric
-
-This information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/c3eb3583-17b2-4d83-abf7-d852ae1b9fff/concepts/4d0420af-0527-4c9f-a5cd-56ee0fe4f09e)
-for instructions and the project rubric.
+  `./build/UnscentedKF ../data/sample-laser-radar-measurement-data-1.txt ./output.txt`

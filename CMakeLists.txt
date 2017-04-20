@@ -6,6 +6,8 @@ add_definitions(-std=c++0x)
 
 set(sources
    src/ukf.cpp
+   src/kalman_filter.cpp
+   src/FusionEKF.cpp
    src/main.cpp
    src/tools.cpp)
 

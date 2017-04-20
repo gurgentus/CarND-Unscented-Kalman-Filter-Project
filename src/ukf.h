@@ -32,6 +32,8 @@ public:
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
+  MatrixXd Zsig_;
+
   ///* time when the state is true, in us
   long long time_us_;
 
@@ -41,29 +43,32 @@ public:
   ///* Process noise standard deviation yaw acceleration in rad/s^2
   double std_yawdd_;
 
-  ///* Laser measurement noise standard deviation position1 in m
-  double std_laspx_;
-
-  ///* Laser measurement noise standard deviation position2 in m
-  double std_laspy_;
-
-  ///* Radar measurement noise standard deviation radius in m
-  double std_radr_;
-
-  ///* Radar measurement noise standard deviation angle in rad
-  double std_radphi_;
-
-  ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
+  // ///* Laser measurement noise standard deviation position1 in m
+  // double std_laspx_;
+  //
+  // ///* Laser measurement noise standard deviation position2 in m
+  // double std_laspy_;
+  //
+  // ///* Radar measurement noise standard deviation radius in m
+  // double std_radr_;
+  //
+  // ///* Radar measurement noise standard deviation angle in rad
+  // double std_radphi_;
+  //
+  // ///* Radar measurement noise standard deviation radius change in m/s
+  // double std_radrd_ ;
 
   ///* Weights of sigma points
   VectorXd weights_;
 
   ///* State dimension
-  int n_x_;
+  const int n_x_ = 5;
 
   ///* Augmented state dimension
-  int n_aug_;
+  const int n_aug_ = 7;
+
+  ////* Measurement dimension - will change between radar/lidar
+  int n_z_ = 3;
 
   ///* Sigma point spreading parameter
   double lambda_;
@@ -74,6 +79,10 @@ public:
   ///* the current NIS for laser
   double NIS_laser_;
 
+  // measurement covariance matrix
+  // size 2 array for 2 measurement models
+  Eigen::MatrixXd R_[2];
+
   /**
    * Constructor
    */
@@ -83,6 +92,8 @@ public:
    * Destructor
    */
   virtual ~UKF();
+
+  void Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd R_in[2]);
 
   /**
    * ProcessMeasurement
@@ -97,17 +108,27 @@ public:
    */
   void Prediction(double delta_t);
 
+  // common code for ukf update, returns NIS value
+  double Update(const VectorXd &z, const MatrixXd& R, bool normalize);
+
   /**
    * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
+   * @param z The measurement at k+1
    */
-  void UpdateLidar(MeasurementPackage meas_package);
+  void UpdateLidar(const VectorXd &z);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
+   * @param z The measurement at k+1
    */
-  void UpdateRadar(MeasurementPackage meas_package);
+  void UpdateRadar(const VectorXd &z);
+
+  void UpdateState(VectorXd* x_out, MatrixXd* P_out);
+
+private:
+  void GenerateAugmentedSigmaPoints();
+  void SigmaPointPrediction(double delta_t);
+  void PredictMeanAndCovariance();
 };
 
 #endif /* UKF_H */
